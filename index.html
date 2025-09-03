@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شات وتين العقرب</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h2>🦂 شات وتين العقرب</h2>
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('login')">تسجيل الدخول</button>
+                <button class="tab" onclick="showTab('register')">إنشاء حساب</button>
+            </div>
+            
+            <!-- تسجيل الدخول -->
+            <form id="loginForm" class="form active">
+                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" required>
+                <button type="submit">دخول</button>
+            </form>
+            
+            <!-- إنشاء حساب -->
+            <form id="registerForm" class="form">
+                <input type="text" id="registerDisplayName" placeholder="الاسم المعروض">
+                <input type="email" id="registerEmail" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="registerPassword" placeholder="كلمة المرور" required>
+                <button type="submit">إنشاء حساب</button>
+            </form>
+            
+            <div id="loginError" class="error"></div>
+        </div>
+    </div>
+
+    <!-- شاشة الشات الرئيسية -->
+    <div id="chatScreen" class="screen">
+        <div class="chat-container">
+            <!-- الشريط العلوي -->
+            <div class="header">
+                <div class="user-info">
+                    <div class="user-avatar" onclick="openProfileModal()">
+                        <img id="userAvatar" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><circle cx='20' cy='20' r='20' fill='%23007bff'/><text x='20' y='25' text-anchor='middle' fill='white' font-size='16'>👤</text></svg>" alt="صورة شخصية">
+                    </div>
+                    <div class="user-details">
+                        <span id="userDisplayName"></span>
+                        <span id="userRank" class="rank"></span>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <button onclick="openAllUsersModal()" class="btn">👥 جميع المستخدمين</button>
+                    <button onclick="openSoundSettings()" class="btn">🔊 الأصوات</button>
+                    <button onclick="openProfileModal()" class="btn">الملف الشخصي</button>
+                    <button onclick="openAdminPanel()" class="btn admin-btn" id="adminBtn" style="display: none;">لوحة الإدارة</button>
+                    <button onclick="logout()" class="btn logout-btn">خروج</button>
+                </div>
+            </div>
+
+            <!-- منطقة الشات -->
+            <div class="chat-content">
+                <!-- قائمة الغرف والمستخدمين -->
+                <div class="users-sidebar">
+                    <div class="rooms-section">
+                        <h3>الغرف المتاحة</h3>
+                        <div id="roomsList"></div>
+                        <button onclick="openCreateRoomModal()" class="btn create-room-btn" id="createRoomBtn" style="display: none;">إنشاء غرفة</button>
+                    </div>
+                    <div class="users-section">
+                        <h3>المستخدمون المتصلون</h3>
+                        <div id="usersList"></div>
+                    </div>
+                </div>
+
+                <!-- منطقة الرسائل -->
+                <div class="messages-area">
+                    <div class="room-header">
+                        <h3 id="currentRoomName">الغرفة الرئيسية</h3>
+                    </div>
+                    <div id="messagesContainer" class="messages-container"></div>
+                    <div class="message-input-area">
+                        <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا..." maxlength="500">
+                        <button onclick="sendMessage()" class="send-btn">إرسال</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال الملف الشخصي -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+            <h2>الملف الشخصي</h2>
+            
+            <div class="profile-section">
+                <h3>الصور الشخصية</h3>
+                <div class="profile-images">
+                    <div class="profile-image-slot">
+                        <img id="profileImg1" class="profile-preview" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f0f0f0'/><text x='50' y='55' text-anchor='middle' fill='%23999' font-size='14'>صورة 1</text></svg>" alt="صورة 1">
+                        <input type="file" id="profileFile1" accept="image/*" onchange="previewProfileImage(1, this)">
+                        <label for="profileFile1" class="upload-btn">اختر صورة 1</label>
+                    </div>
+                    <div class="profile-image-slot">
+                        <img id="profileImg2" class="profile-preview" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f0f0f0'/><text x='50' y='55' text-anchor='middle' fill='%23999' font-size='14'>صورة 2</text></svg>" alt="صورة 2">
+                        <input type="file" id="profileFile2" accept="image/*" onchange="previewProfileImage(2, this)">
+                        <label for="profileFile2" class="upload-btn">اختر صورة 2</label>
+                    </div>
+                </div>
+                <button onclick="uploadProfileImages()" class="btn save-btn">حفظ الصور</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>تغيير الاسم</h3>
+                <input type="text" id="newDisplayName" placeholder="الاسم الجديد">
+                <button onclick="updateDisplayName()" class="btn save-btn">حفظ الاسم</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>خلفية الرسائل</h3>
+                <input type="file" id="messageBackgroundFile" accept="image/*" onchange="previewMessageBackground(this)">
+                <label for="messageBackgroundFile" class="upload-btn">اختر خلفية للرسائل</label>
+                <div id="messageBackgroundPreview" class="background-preview"></div>
+                <button onclick="uploadMessageBackground()" class="btn save-btn">حفظ خلفية الرسائل</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>المعلومات الشخصية</h3>
+                
+                <div class="personal-info-form">
+                    <div class="form-group">
+                        <label for="userAge">العمر:</label>
+                        <input type="number" id="userAge" min="13" max="100" placeholder="اختياري">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userGender">الجنس:</label>
+                        <select id="userGender">
+                            <option value="">اختياري</option>
+                            <option value="ذكر">ذكر</option>
+                            <option value="أنثى">أنثى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userMaritalStatus">الحالة الاجتماعية:</label>
+                        <select id="userMaritalStatus">
+                            <option value="">اختياري</option>
+                            <option value="أعزب">أعزب</option>
+                            <option value="مرتبط">مرتبط</option>
+                            <option value="متزوج">متزوج</option>
+                            <option value="خاطب">خاطب</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userAboutMe">معلومات عني:</label>
+                        <textarea id="userAboutMe" placeholder="اكتب شيئاً عن نفسك..."></textarea>
+                    </div>
+                    
+                    <button onclick="updatePersonalInfo()" class="btn save-btn">حفظ المعلومات الشخصية</button>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>الرتبة الحالية</h3>
+                <div id="currentRank" class="current-rank"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال لوحة الإدارة -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content admin-modal">
+            <span class="close" onclick="closeAdminPanel()">&times;</span>
+            <h2>لوحة إدارة الرتب</h2>
+            
+            <div class="admin-section">
+                <h3>المستخدمون والرتب</h3>
+                <div id="allUsersList" class="users-management"></div>
+            </div>
+
+            <div class="admin-section">
+                <h3>الرتب المتاحة</h3>
+                <div id="availableRanks" class="ranks-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال تعيين الرتبة -->
+    <div id="assignRankModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAssignRankModal()">&times;</span>
+            <h2>تعيين رتبة</h2>
+            
+            <div class="assign-rank-form">
+                <p>تعيين رتبة للمستخدم: <span id="targetUserName"></span></p>
+                <select id="rankSelect">
+                    <option value="">اختر الرتبة</option>
+                </select>
+                <textarea id="rankReason" placeholder="سبب تعيين الرتبة (اختياري)"></textarea>
+                <button onclick="confirmAssignRank()" class="btn save-btn">تعيين الرتبة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال إنشاء غرفة -->
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateRoomModal()">&times;</span>
+            <h2>إنشاء غرفة جديدة</h2>
+            
+            <div class="create-room-form">
+                <input type="text" id="roomName" placeholder="اسم الغرفة (مثل: غرفة اليمن)" required>
+                <textarea id="roomDescription" placeholder="وصف الغرفة (اختياري)"></textarea>
+                <input type="file" id="roomBackgroundFile" accept="image/*" onchange="previewRoomBackground(this)">
+                <label for="roomBackgroundFile" class="upload-btn">اختر خلفية للغرفة</label>
+                <div id="roomBackgroundPreview" class="background-preview"></div>
+                <button onclick="createRoom()" class="btn save-btn">إنشاء الغرفة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال الدردشة الخاصة -->
+    <div id="privateChatModal" class="modal">
+        <div class="modal-content private-chat-modal">
+            <span class="close" onclick="closePrivateChatModal()">&times;</span>
+            <div class="private-chat-header">
+                <h2>دردشة خاصة مع: <span id="privateChatUserName"></span></h2>
+            </div>
+            
+            <div id="privateChatMessages" class="private-chat-messages"></div>
+            
+            <div class="private-chat-input">
+                <input type="text" id="privateMessageInput" placeholder="اكتب رسالتك الخاصة..." maxlength="500">
+                <button onclick="sendPrivateMessage()" class="send-btn">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال جميع المستخدمين -->
+    <div id="allUsersModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAllUsersModal()">&times;</span>
+            <h2>👥 جميع المستخدمين</h2>
+            
+            <div class="all-users-list" id="allUsersListModal">
+                <div class="loading">جاري تحميل المستخدمين...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
